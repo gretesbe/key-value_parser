@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+           
+        }
+        .form-group label {
+            margin-bottom: 1px;
+            font-weight:bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 2px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        #outputBox {
+            width: 100%;
+            height:auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        #copyButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        #copyButton:hover {
+            background-color: #007bb5;
+        }
+    </style>
+</head>
+<body>
+    <h2>key=value easy editor</h2>
+    <textarea id="keyValueInput" rows="10" cols="50" placeholder="Paste your key=value pairs here"></textarea>
+    <br>
+    <button id="generateFormButton">Make Easier!</button>
+    <form id="dynamicForm"></form>
+    <textarea id="outputBox" rows="5" readonly></textarea>
+    <button id="copyButton">Copy Output</button>
+    <script>
+        document.getElementById('generateFormButton').addEventListener('click', function() {
+            const input = document.getElementById('keyValueInput').value;
+            const form = document.getElementById('dynamicForm');
+            form.innerHTML = ''; // Clear any existing form content
+
+            // Regular expression to match key=value pairs, preserving quoted values
+            const pairs = input.match(/(\w+)=("[^"]*"|\S+)/g);
+            pairs.forEach(pair => {
+                const [key, value] = pair.split(/=(.+)/); // Split only at the first '='
+                if (key && value) {
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'form-group';
+
+                    const label = document.createElement('label');
+                    label.textContent = key;
+                    formGroup.appendChild(label);
+
+                    const inputField = document.createElement('input');
+                    inputField.type = 'text';
+                    inputField.name = key;
+                    inputField.value = sanitizeValue(value); // Sanitize value before setting it
+                    inputField.addEventListener('input', updateOutputBox);
+                    formGroup.appendChild(inputField);
+
+                    form.appendChild(formGroup);
+                }
+            });
+
+            updateOutputBox();
+        });
+
+
+
+        function updateOutputBox() {
+            const form = document.getElementById('dynamicForm');
+            const outputBox = document.getElementById('outputBox');
+            const formData = new FormData(form);
+            const output = Array.from(formData.entries())
+                .map(([key, value]) => `${key}=${sanitizeValue(value)}`)
+                .join(' ');
+            outputBox.value = output;
+        }
+
+        function copyOutput() {
+            const outputBox = document.getElementById('outputBox');
+            outputBox.select();
+        }
+
+        function sanitizeValue(value) {
+            // Regular expression to match spaces outside of quotes
+            return value.replace(/(?!\B"[^"]*)\s+(?![^"]*"\B)/g, '');
+        }
+
+        document.getElementById('copyButton').addEventListener('click', function(event) {
+            copyOutput();
+            event.preventDefault();
+        });
+        
+    </script>
+</body>
+</html>
